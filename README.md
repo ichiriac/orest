@@ -42,3 +42,40 @@ api.help({
 api.register(app);
 
 ```
+
+## Design choices
+
+Will work with these frameworks :
+
+- ExpressJS 
+- Sequalize
+- OAuth 2.0
+- Redis for Sessions
+
+Will follow :
+
+- JSON API Responses https://jsonapi.org
+- Route example : /v1/products
+- Route with extension : /v1/products.json
+- Other extensions (with automated conversion) : xml or yaml
+- Describing the API automatically with https://www.openapis.org/
+
+Will handle :
+
+- Multiple versions
+- Partial responses
+- Paginations
+- Relations over entities
+- HTTP Error Codes with a Message body
+- HTTP Verbs for CRUD
+
+Will do out of the box :
+
+- Generate documentation
+- Generate a JS client
+
+---
+
+# W.I.P
+
+Still working on it
