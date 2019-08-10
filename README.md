@@ -2,6 +2,46 @@
 
 Opinionated REST library for NodeJS using a cool stack & specification
 
+
+## Design choices
+
+Will work with these frameworks :
+
+- ExpressJS 
+- Sequalize
+- OAuth 2.0
+- Redis for Sessions
+
+Will follow :
+
+- JSON API Responses https://jsonapi.org
+- Route example : /v1/products
+- Route with extension : /v1/products.json
+- Other extensions (with automated conversion) : xml or yaml
+- Describing the API automatically with https://www.openapis.org/
+
+Will handle :
+
+- Multiple versions
+- Partial responses
+- Paginations
+- Relations over entities
+- HTTP Error Codes with a Message body
+- HTTP Verbs for CRUD
+
+Will do out of the box :
+
+- Generate documentation
+- Generate a JS client
+
+---
+
+# W.I.P
+
+Still working on it
+
+# Getting started
+
 ## Install
 
 ```sh
@@ -43,39 +83,17 @@ api.register(app);
 
 ```
 
-## Design choices
+## The api
 
-Will work with these frameworks :
+You can deal with 2 concepts :
+- The entity
+- The endpoint
 
-- ExpressJS 
-- Sequalize
-- OAuth 2.0
-- Redis for Sessions
+An entity is a sequelize model structure, and you can configure 
+how and what you want to expose.
 
-Will follow :
+The endpoint is a routing concept in order to expose either an 
+entity (they are generating endpoints out of the box), or a 
+generic action.
 
-- JSON API Responses https://jsonapi.org
-- Route example : /v1/products
-- Route with extension : /v1/products.json
-- Other extensions (with automated conversion) : xml or yaml
-- Describing the API automatically with https://www.openapis.org/
-
-Will handle :
-
-- Multiple versions
-- Partial responses
-- Paginations
-- Relations over entities
-- HTTP Error Codes with a Message body
-- HTTP Verbs for CRUD
-
-Will do out of the box :
-
-- Generate documentation
-- Generate a JS client
-
----
-
-# W.I.P
-
-Still working on it
+Once you defined the API, you can document it with the help api.
