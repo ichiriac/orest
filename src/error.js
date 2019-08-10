@@ -17,3 +17,5 @@ class HttpError {
         return this._err.toString();
     }
 }
+
+module.exports = HttpError;

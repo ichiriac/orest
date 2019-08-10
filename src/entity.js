@@ -1,3 +1,4 @@
+const Router = require('./router');
 /**
  * Entity glue layer
  */
@@ -19,7 +20,7 @@ class Entity {
             }
         }
         this.name = name;
-        this.endpoints = new EntityEndpoints(api, name);
+        this.endpoints = new Router(api, name);
     }
 
     list(cb, version = 1) {
@@ -29,3 +30,5 @@ class Entity {
     }
 
 }
+
+module.exports = Entity;

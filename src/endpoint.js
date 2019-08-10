@@ -63,3 +63,5 @@ class Endpoint {
         return this;
     }
 }
+
+module.exports = Endpoint;

@@ -1,3 +1,4 @@
+const HttpError = require('./error');
 /**
  * Creates an response handler
  */
@@ -148,3 +149,5 @@ class Response {
 Response.send = function(req, res, value) {
     return (new Response(value)).process(req, res);
 };
+
+module.exports = Response;

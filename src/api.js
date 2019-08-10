@@ -1,4 +1,9 @@
 
+const Entity = require('./entity');
+const Endpoint = require('./endpoint');
+const Response = require('./response');
+const utils = require('./utils');
+
 /**
  * The API instance
  */
@@ -17,7 +22,7 @@ class Api {
      * @param {*} model 
      */
     entity(model) {
-        let name = plural(model);
+        let name = utils.plural(model);
         if (!this._entities[name]) {
             this._entities[name] = new Entity(this, model, name);
         }
@@ -59,7 +64,7 @@ class Api {
             let details = entity.endpoints.entity();
         }
         
-        structure = deepMerge(structure, meta);
+        structure = utils.deepMerge(structure, meta);
         return this.endpoint('help').get((req, res) => {
             Response.send(req, res, structure);
         }, version);
@@ -98,4 +103,4 @@ class Api {
     }
 }
 
-
+module.exports = Api;

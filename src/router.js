@@ -17,3 +17,5 @@ class Router {
         return this.api.endpoint(this.name + '/:id/' + field);
     }
 }
+
+module.exports = Router;

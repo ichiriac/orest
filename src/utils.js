@@ -45,3 +45,7 @@ function plural(entry) {
     }
     return entry;
 }
+
+module.exports = {
+  plural, deepMerge
+};
