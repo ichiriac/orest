@@ -1,5 +1,7 @@
 const Router = require('./router');
 const Response = require('./response');
+const Filter = require('./filter');
+const Error = require('./error');
 
 /**
  * Entity glue layer
@@ -23,6 +25,7 @@ class Entity {
         }
         this.name = name;
         this.endpoints = new Router(api, name);
+        this._search = null;
         this._version = 1;
         this._filters = [];
     }
@@ -46,8 +49,21 @@ class Entity {
      */
     filter(name, cb) {
         // @todo : implement it
-        this._filters[name] = cb;
-        return this;
+        this._filters[name] = this.endpoints.list('/' + name).get(() => {
+            // @todo
+        }, this._version);
+        return this._filters[name];
+    }
+
+    /**
+     * Enabling the search function
+     * @param {*} columns 
+     */
+    search(columns) {
+        this._search = columns;
+        return this.endpoints.list('/search').get(() => {
+            // @todo
+        }, this._version);
     }
 
     /**
@@ -77,7 +93,7 @@ class Entity {
     list(cb) {
         this.endpoints.list().get(() => {
 
-        }, this.version);
+        }, this._version);
     }
 
     /**
@@ -114,9 +130,9 @@ class Entity {
      * @param {*} cb 
      */
     read(relation, cb) {
-        if (typeof relation === 'function') {
+        if (arguments.length === 1) {
             cb = relation;
-            cb = null;
+            relation = null;
         }
         let route;
         if (relation) {
@@ -129,19 +145,36 @@ class Entity {
             route.get(false, this.version);
         } else {
             // retrieve informations
-            return route.get((req, res) => {
+            route.get((req, res) => {
                 let filter = Filter.entity(this.model, req, res);
                 filter.read().then((entity) => {
                     if (!entity) {
-                        
+                        // 404 : not found
+                        throw new Error.NotFound(
+                            'Entity not found', 3410
+                        );
                     }
+                    // pre-hook
+                    if (typeof cb === 'function') {
+                        let result = cb(req, res, entity);
+                        if (result) {
+                            entity = result;
+                        }    
+                    }
+                    Response.send(req, res, entity);
+                }).catch(function(err) {
+                    if (!(err instanceof Error)) {
+                        // unwrapped error, show it on console as a warning
+                        console.error(err);
+                        // wrap the error into an http message
+                        err = new Error.Internal("Unable to retrieve entity", 3510, err);
+                    }
+                    // respond the error
+                    Response.send(req, res, err);
                 });
-                let entityId = req.params.id;
-                this.model.findByPk()
-                Response.send(req, res, entity);
-            }, this.version);    
+            }, this._version);    
         }
-        return this;
+        return route;
     }
     /**
      * 
