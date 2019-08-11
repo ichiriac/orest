@@ -21,8 +21,8 @@ const Op = require('sequelize').Op;
  * - filters : a list of pre-defined filters
  * Example : ?filters=by-cat-Drama,top-sellers
  * 
- * - sort : a list of columns to sort, syntax sort=(Column:asc|desc)+
- * Example : ?sort=Age:desc,Name:asc will result in SORT BY Age DESC, Name ASC
+ * - order : a list of columns to sort, syntax order=(Column:asc|desc)+
+ * Example : ?order=Age:desc,Name:asc will result in ORDER BY Age DESC, Name ASC
  * 
  * - custom filtering : you can use a filter on multiple columns, each criteria will 
  * be agregated by default with `AND`. Use the following syntax : $column_name=operator:value.
@@ -139,7 +139,7 @@ class ListFilter extends Filter {
         this.offset = null;
         this.marker = null;
         this.filters = null;
-        this.sort = null;
+        this.order = null;
         this.where = {};
         // reads the request parameters
         if (req.query) {
@@ -191,18 +191,18 @@ class ListFilter extends Filter {
                     }
                 });
             }
-            if (req.query.sort) {
-                this.sort = {};
+            if (req.query.order) {
+                this.order = {};
                 if (this.marker != null) {
                     throw new Error.Conflicts(
                         'Invalid usage of marker and orders', 2450
                     );   
                 }
-                req.query.sort.split(',').forEach((order) => {
+                req.query.order.split(',').forEach((order) => {
                     order = order.split(':', 2);
                     let dir = 'asc';
                     if (order.length === 2) {
-                        order = order[1].toLowerCase().trim();
+                        dir = order[1].toLowerCase().trim();
                     }
                     // check the field
                     order = order[0];
@@ -213,9 +213,9 @@ class ListFilter extends Filter {
                     }
                     // check the direction
                     if (dir === 'asc') {
-                        this.sort[order] = true;
+                        this.order[order] = true;
                     } else if (dir === 'desc') {
-                        this.sort[order] = false;
+                        this.order[order] = false;
                     } else {
                         throw new Error.BadFormat(
                             'Bad order direction for "'+order+'", expecting asc or desc', 2452
@@ -224,7 +224,7 @@ class ListFilter extends Filter {
                 });
             }
             // lookup on criterias
-            for(key in req.query) {
+            for(let key in req.query) {
                 if (key[0] === '$') {
                     let value = req.query[key];
                     let field = key.substring(1);
@@ -236,7 +236,7 @@ class ListFilter extends Filter {
                             'Undefined criteria field "'+field+'"', 2460
                         );
                     }
-                    if (Op.hasOwnProperty(criteria)) {
+                    if (!Op.hasOwnProperty(criteria)) {
                         throw new Error.BadArgument(
                             'Undefined criteria operator "'+criteria+'"', 2461
                         );
@@ -260,16 +260,20 @@ class ListFilter extends Filter {
         if (this.offset !== null) {
             opt.offset = this.offset;
         }
-        if (this.sort) {
-            opt.sort = [];
-            for(let k in this.sort) {
-                opt.sort.push([k, this.sort[k] ? 'ASC' : 'DESC']);
+        if (this.order) {
+            opt.order = [];
+            for(let k in this.order) {
+                opt.order.push([k, this.order[k] ? 'ASC' : 'DESC']);
             }
         }
         return opt;
     }
 
+    /**
+     * Request the resultset
+     */
     find() {
+        let opt = this.getOptions();
         return this.model.findAndCountAll(opt);
     }    
 }
