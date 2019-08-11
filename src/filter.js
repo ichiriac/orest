@@ -1,4 +1,5 @@
 const Error = require('./error');
+const Op = require('sequelize').Op;
 /**
  * 
  * The filters are used to filter a resultset
@@ -56,26 +57,102 @@ class Filter {
      * @param {*} res 
      */
     constructor(model, req, res) {
-        this.where = {};
+        this.model = model;
+        this.fields = null;
+        if (req.query) {
+            if (req.query.fields) {
+                this.fields = {};
+                req.query.fields.split(',').forEach((field) => {
+                    let pt = field.indexOf('.');
+                    if (pt > 0) {
+                        let property = field.substring(pt + 1);
+                        let field = field.substring(0, pt);
+                        if (!this.fields[field]) {
+                            this.fields[field] = {};
+                        }
+                        this.fields[field][property] = true;
+                    } else {
+                        if (this.fields.hasOwnProperty(field)) {
+                            throw new Error.BadArgument(
+                                'Field "'+field+'" used twice', 2430
+                            );
+                        }
+                        this.fields[field] = true;
+                    }
+                    // checking each field name
+                    if (!this.hasField(field)) {
+                        throw new Error.BadArgument(
+                            'Bad fields value, undefined attribute "'+field+'"', 2431
+                        );
+                        // @todo : check relation attributes
+                    }
+                });
+            }
+        }        
+    }
+
+    /**
+     * Check if the field exists
+     * @param {*} name 
+     */
+    hasField(name) {
+        return this.model.rawAttributes[name];
+    }
+
+}
+
+class EntityFilter extends Filter {
+    constructor(model, req, res) {
+        super(model, req, res);
+        if (!req.params.id) {
+            throw new Error.BadArgument(
+                'Missing id parameter', 2470
+            );
+        }
+        this.id = req.params.id;
+    }
+
+    /**
+     * Internal server error
+     */
+    read() {
+        return this.model.findByPk(this.id).catch((error) => {
+            throw new Error.Internal(
+                'Unable to retrieve record "'+this.id+'"', 2570, error
+            );
+        });
+    }
+
+    update() {
+
+    }
+
+    delete() {
+
+    }    
+}
+
+class ListFilter extends Filter {
+    constructor(model, req, res) {
+        super(model, req, res);
         this.limit = 10;
         this.offset = null;
         this.marker = null;
-        this.fields = null;
-        this.sort = null;
         this.filters = null;
-        this.model = model;
+        this.sort = null;
+        this.where = {};
         // reads the request parameters
         if (req.query) {
             if (req.query.limit) {
                 this.limit = Number.parseInt(req.query.limit, 10);
                 if (isNaN(this.limit)) {
                     throw new Error.BadFormat(
-                        'Bad limit format, expecting a number', 1410
+                        'Bad limit format, expecting a number', 2410
                     );
                 }
                 if (this.limit < 1 || this.limit > 200) {
                     throw new Error.BadFormat(
-                        'Bad limit value, expecting between 1 and 200', 1411
+                        'Bad limit value, expecting between 1 and 200', 2411
                     );
                 }
             }
@@ -83,42 +160,127 @@ class Filter {
                 this.offset = Number.parseInt(req.query.offset, 10);
                 if (isNaN(this.offset)) {
                     throw new Error.BadFormat(
-                        'Bad offset format, expecting a number', 1420
+                        'Bad offset format, expecting a number', 2420
                     );
                 }
                 if (this.offset < 0 || this.offset > 10000) {
                     throw new Error.BadFormat(
-                        'Bad offset value, expecting between 0 and 10 000', 1421
+                        'Bad offset value, expecting between 0 and 10 000', 2421
                     );
                 }
             }
             if (req.query.marker) {
                 this.marker = req.query.marker;
                 if (this.offset !== null) {
-                    throw new Error.BadFormat(
-                        'Bad offset value, expecting between 0 and 10 000', 1421
+                    throw new Error.Conflicts(
+                        'Marker parameter conflicts with offset', 2422
                     );
                 }
             }
+            
+            if (req.query.filters) {
+                this.filters = [];
+                req.query.filters.split(',').forEach((filter) => {
+                    // @todo check if filters are really defined
+                    if (this.filters.indexOf(filter) === -1) {
+                        this.filters.push(filter);
+                    } else {
+                        throw new Error.BadArgument(
+                            'Filter "'+filter+'" used twice', 2440
+                        );
+                    }
+                });
+            }
+            if (req.query.sort) {
+                this.sort = {};
+                if (this.marker != null) {
+                    throw new Error.Conflicts(
+                        'Invalid usage of marker and orders', 2450
+                    );   
+                }
+                req.query.sort.split(',').forEach((order) => {
+                    order = order.split(':', 2);
+                    let dir = 'asc';
+                    if (order.length === 2) {
+                        order = order[1].toLowerCase().trim();
+                    }
+                    // check the field
+                    order = order[0];
+                    if (!this.hasField(order)) {
+                        throw new Error.BadArgument(
+                            'Undefined ordering field "'+order+'"', 2451
+                        );
+                    }
+                    // check the direction
+                    if (dir === 'asc') {
+                        this.sort[order] = true;
+                    } else if (dir === 'desc') {
+                        this.sort[order] = false;
+                    } else {
+                        throw new Error.BadFormat(
+                            'Bad order direction for "'+order+'", expecting asc or desc', 2452
+                        );
+                    }
+                });
+            }
+            // lookup on criterias
             for(key in req.query) {
                 if (key[0] === '$') {
                     let value = req.query[key];
-                } else if (key[0] === '%') {
-
+                    let field = key.substring(1);
+                    let criteria = value.split(':', 2);
+                    value = criteria[1];
+                    criteria = criteria[0];
+                    if (!this.hasField(field)) {
+                        throw new Error.BadArgument(
+                            'Undefined criteria field "'+field+'"', 2460
+                        );
+                    }
+                    if (Op.hasOwnProperty(criteria)) {
+                        throw new Error.BadArgument(
+                            'Undefined criteria operator "'+criteria+'"', 2461
+                        );
+                    }
+                    criteria = Op[criteria];
+                    this.where[field] = {
+                        [criteria]: value
+                    };
                 }
             }
+        }        
+    }
+    /**
+     * Retrieve default filtering options
+     */
+    getOptions() {
+        let opt = {
+            where: this.where,
+            limit: this.limit
+        };
+        if (this.offset !== null) {
+            opt.offset = this.offset;
         }
+        if (this.sort) {
+            opt.sort = [];
+            for(let k in this.sort) {
+                opt.sort.push([k, this.sort[k] ? 'ASC' : 'DESC']);
+            }
+        }
+        return opt;
     }
 
     find() {
-
-    }
-    update() {
-
-    }
-    delete() {
-
-    }
+        return this.model.findAndCountAll(opt);
+    }    
 }
+
+Filter.entity = function(model, req, res)  {
+    return new EntityFilter(model, req, res);
+};
+
+Filter.list = function(model, req, res) {
+    return new ListFilter(model, req, res);
+};
+
 
 module.exports = Filter;
