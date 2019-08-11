@@ -39,6 +39,7 @@ class Api {
             entities: {},
             actions: {}
         };
+        // express entities
         for(let k in this._entities) {
             let entity = this._entities[k];
             let name = entity.name;
@@ -47,7 +48,7 @@ class Api {
                 model: {},
                 entity: {}
             };
-            let list = entity.endpoints.list();            
+            let list = entity.endpoints.list();
             if (list.has('get', version)) {
                 structure.entities[name].model['get'] = {
                     method: 'GET',

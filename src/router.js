@@ -1,20 +1,25 @@
 
 /**
- * 
+ * Defines the way an entity can route its URLS
  */
 class Router {
     constructor(api, name) {
         this.api = api;
         this.name = name;
     }
-    list() {
-        return this.api.endpoint(this.name);
+    list(folder) {
+        if (!folder) {
+            folder = this.name;
+        } else {
+            folder = this.name + folder;
+        }
+        return this.api.endpoint(folder);
     }
     entity() {
-        return this.api.endpoint(this.name + '/:id');
+        return this.list('/:id');
     }
     relation(field) {
-        return this.api.endpoint(this.name + '/:id/' + field);
+        return this.list('/:id/' + field);
     }
 }
 
