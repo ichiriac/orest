@@ -37,7 +37,11 @@ class Response {
      * @param {*} fields 
      */
     filter(entity, fields) {
-        let result = {};
+        if (entity === null) return entity;
+        if (entity.dataValues) {
+            entity = entity.dataValues;
+        }
+        let result = Array.isArray(entity) ? [] : {};
         if (Array.isArray(fields) && fields.length > 0) {
             // prepare the list of fields to extract
             let names = {};
@@ -114,7 +118,7 @@ class Response {
             result = this.filter(data, fields);
         }
         if (format === 'xml') {
-            return '<?xml version="1.0" encoding="utf-8"?>\n' + this.xml(result, 0);
+            return '<?xml version="1.0" encoding="utf-8"?>\n<response>' + this.xml(result, 1) + '</response>';
         }
         return JSON.stringify(result, null, 2);
     }
@@ -127,15 +131,30 @@ class Response {
     xml(obj, level) {
         let out;
         if (typeof obj === 'object') {
-            out = [];
-            for(let k in obj) {
-                out.push(
-                    '<' + k + '>' + 
-                    this.xml(obj[k], level + 1) +
-                    '</' + k + '>'
-                );
+            out = [''];
+            if (Array.isArray(obj))  {
+                for(let k in obj) {
+                    out.push(
+                        '<item>' + 
+                        this.xml(obj[k], level + 1) +
+                        '</item>'
+                    );
+                }
+            } else {
+                for(let k in obj) {
+                    out.push(
+                        '<' + k + '>' + 
+                        this.xml(obj[k], level + 1) +
+                        '</' + k + '>'
+                    );
+                }
             }
-            out = out.join('\n'.padStart(level, ' '));
+            if (out.length > 1) {
+                out = out.join('\n' + '\t'.repeat(level));
+                out += '\n' + '\t'.repeat(level - 1);
+            } else {
+                out = '';
+            }
         } else {
             out = obj.toString();
         }
