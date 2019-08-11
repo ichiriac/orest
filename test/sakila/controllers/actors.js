@@ -4,9 +4,7 @@ module.exports = function(api, db) {
     const actors = api.entity(model);
 
     // handles the listing
-    actors.list(function(req, res, filter) {
-        return model.findAll(filter);
-    });
+    actors.list(true);
     // or for default : actors.list(true);
 
     // enables the search options

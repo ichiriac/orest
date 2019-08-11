@@ -1,3 +1,6 @@
+const Error = require('./error');
+const Response = require('./response');
+
 /**
  * Endpoint abstraction layer (routing)
  */
@@ -132,7 +135,17 @@ class Action {
                 // @todo
             }
             if (typeof this.cb === 'function') {
-                this.cb(req, res);
+                try {
+                    this.cb(req, res);
+                } catch(err) {
+                    if (!(err instanceof Error)) {
+                        // unwrapped error, show it on console as a warning
+                        console.error(err);
+                        // wrap the error into an http message
+                        err = new Error.Internal(err.message, 4500, err);
+                    }
+                    Response.send(req, res, err);
+                }
             }
         }
     }
