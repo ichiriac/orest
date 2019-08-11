@@ -91,6 +91,15 @@ class Conflicts extends HttpError {
     }
 }
 
+class NotFound extends HttpError {
+    constructor(message, code, from) {
+        if (!code) {
+            code = 1404;
+        }
+        super(404, message, code, from);
+    }
+}
+
 class Internal extends HttpError {
     constructor(message, code, from) {
         if (!code) {
@@ -103,6 +112,7 @@ class Internal extends HttpError {
 HttpError.BadFormat = BadFormat;
 HttpError.BadArgument = BadArgument;
 HttpError.Conflicts = Conflicts;
+HttpError.NotFound = NotFound;
 HttpError.Internal = Internal;
 
 module.exports = HttpError;
