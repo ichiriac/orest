@@ -22,7 +22,7 @@ class Api {
      * @param {*} model 
      */
     entity(model) {
-        let name = utils.plural(model);
+        let name = utils.plural(model).toLowerCase();
         if (!this._entities[name]) {
             this._entities[name] = new Entity(this, model, name);
         }
