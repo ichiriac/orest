@@ -32,44 +32,77 @@
  * Represents an HTTP error
  */
 class HttpError {
-    constructor(http, message, code) {
+    /**
+     * Default constructor
+     * @param {*} http 
+     * @param {*} message 
+     * @param {*} code 
+     * @param {*} from 
+     */
+    constructor(http, message, code, from) {
         this._http = http;
-        this._err = new Error(message);
         if (!code) code = http;
         if (!message) message = http;
+        this._err = from ? from : new Error(message);
         this.message = message;
         this.code = code;
-        this.details = ''
+        this.details = 'https://<domain>/support/' + code;
     }
+    /**
+     * Serialize the error
+     */
     toString() {
-        return this._err.toString();
+        return "HTTP Error " + this._http + " (#" + this.code + ") : " + this.message +
+               "\nCaused by : " + this._err.toString()
+        ;
     }
 }
 
 class BadFormat extends HttpError {
-    constructor(message, code) {
+    constructor(message, code, from) {
         if (!message) {
             message = 'Bad field format';
         }
         if (!code) {
-            code = 1400;
+            code = 1401;
         }
-        super(400, message, code);
+        super(400, message, code, from);
     }
 }
 
 class BadArgument extends HttpError {
-    constructor(message, code) {
+    constructor(message, code, from) {
         if (!message) {
             message = 'Bad/unexpected argument';
         }
         if (!code) {
-            code = 1500;
+            code = 1402;
         }
-        super(400, message, code);
+        super(400, message, code, from);
+    }
+}
+
+class Conflicts extends HttpError {
+    constructor(message, code, from) {
+        if (!code) {
+            code = 1403;
+        }
+        super(409, message, code, from);
+    }
+}
+
+class Internal extends HttpError {
+    constructor(message, code, from) {
+        if (!code) {
+            code = 1501;
+        }
+        super(500, message, code, from);
     }
 }
 
 HttpError.BadFormat = BadFormat;
+HttpError.BadArgument = BadArgument;
+HttpError.Conflicts = Conflicts;
+HttpError.Internal = Internal;
 
 module.exports = HttpError;
