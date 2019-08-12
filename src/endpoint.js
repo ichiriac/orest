@@ -190,7 +190,15 @@ class Action {
             if (!res.finished) {
                 if (job === undefined) {
                     // awaits to respond
-                    Response.send(req, res, null);
+                    setTimeout(() => {
+                        // response timeout
+                        if (!res.finished) {
+                            console.error(
+                                'Response timeout - ' + req.url
+                            );
+                            Response.send(req, res, null);
+                        }
+                    }, 2000);
                     return;
                 }
                 // resolves a promise
