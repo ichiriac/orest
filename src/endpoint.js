@@ -123,6 +123,7 @@ class Action {
         this.version = version;
         this.cb = cb;
         this.description = null;
+        this.params = {};
     }
     /**
      * Sets a description
@@ -133,17 +134,27 @@ class Action {
         return this;
     }
     /**
+     * Describe a parameter
+     * @param {*} name 
+     * @param {*} type 
+     * @param {*} description 
+     * @param {*} mandatory 
+     */
+    param(name, type, description, mandatory) {
+        this.params[name] = {
+            description, type, mandatory
+        };
+        return this;
+    }
+    /**
      * Retrieves the routing callback
      */    
     callback() {
-        return (req, res) => {
-            if (this.auth) {
-                // @todo
-                
-            }
+        // process the action
+        let process = (req, res) => {
             if (typeof this.cb === 'function') {
                 try {
-                    this.cb(req, res);
+                    return this.cb(req, res);
                 } catch(err) {
                     if (!(err instanceof Error)) {
                         // unwrapped error, show it on console as a warning
@@ -151,9 +162,54 @@ class Action {
                         // wrap the error into an http message
                         err = new Error.Internal(err.message, 4500, err);
                     }
-                    Response.send(req, res, err);
+                    return err;
                 }
             }
+        }
+        // wrapper
+        return (req, res) => {
+            let job;
+            try {
+                if (this.auth) {
+                    job = this.endpoint.api.auth(req, res).then(() => {
+                        return process(req, res);
+                    });
+                } else {
+                    job = process(req, res);
+                }    
+            } catch(err) {
+                if (!(err instanceof Error)) {
+                    // unwrapped error, show it on console as a warning
+                    console.error(err);
+                    // wrap the error into an http message
+                    err = new Error.Internal(err.message, 4500, err);
+                }
+                job = err;
+            }
+            // request not finished, process the result
+            if (!res.finished) {
+                if (job === undefined) {
+                    // awaits to respond
+                    Response.send(req, res, null);
+                    return;
+                }
+                // resolves a promise
+                if (typeof job.then === 'function') {
+                    return job.then(function(data) {
+                        Response.send(req, res, data);
+                    }).catch(function(err) {
+                        if (!(err instanceof Error)) {
+                            // unwrapped error, show it on console as a warning
+                            console.error(err);
+                            // wrap the error into an http message
+                            err = new Error.Internal(err.message, 4500, err);
+                        }
+                        Response.send(req, res, err);
+                    });
+                }
+                // sends more data
+                Response.send(req, res, job);
+            }            
         }
     }
     /**
