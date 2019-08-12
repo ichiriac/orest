@@ -136,12 +136,14 @@ class Api {
             data, 
             this._secret,
             {
+                algorithm: 'HS512',
                 expiresIn: '1h',
                 issuer: req.hostname,
                 jwtid: tokenId
             },
             (err, token) => {
                 if (err) {
+                    console.error('JWT Error', err);
                     return Response.send(req, res, new Error.Internal('JWT Error', 7500, err));
                 }
                 console.log(tokenId + ' => ' + token);
@@ -183,7 +185,12 @@ class Api {
         try {
             token = jwt.verify(
                 req.headers.authorization.substring(7),
-                this._secret
+                this._secret,
+                {
+                    algorithm: 'HS512',
+                    issuer: req.hostname,
+                    algorithms: ['HS512']
+                }
             );
         } catch(err) {
             throw new Error.Unauthorized(
