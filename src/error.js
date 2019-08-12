@@ -19,6 +19,7 @@
  * - 4 : routing
  * - 5 : response
  * - 6 : model / transactions
+ * - 7 : the api
  * 
  * List of types :
  * 
@@ -112,6 +113,18 @@ class Unauthorized extends HttpError {
     }
 }
 
+class Forbidden extends HttpError {
+    constructor(message, code, from) {
+        if (!message) {
+            message = 'Forbidden access, requires credentials';
+        }
+        if (!code) {
+            code = 1406;
+        }
+        super(403, message, code, from);
+    }
+}
+
 class Internal extends HttpError {
     constructor(message, code, from) {
         if (!code) {
@@ -127,5 +140,6 @@ HttpError.Conflicts = Conflicts;
 HttpError.NotFound = NotFound;
 HttpError.Internal = Internal;
 HttpError.Unauthorized = Unauthorized;
+HttpError.Forbidden = Forbidden;
 
 module.exports = HttpError;

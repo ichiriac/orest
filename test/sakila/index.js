@@ -6,7 +6,7 @@ module.exports = function() {
 
         // remove old database if already exists
         const database = __dirname + '/database.sqlite';
-        const initialized = fs.existsSync(database);
+        let initialized = fs.existsSync(database);
         
         //if (initialized) {
         //    fs.unlinkSync(database);

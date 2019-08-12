@@ -1,14 +1,22 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const Api = require('../index');
 const Sakila = require('./sakila/index');
 const fs = require('fs');
+const redis = require('redis');
 
 // initialize the database
 Sakila().then(function(db) {
 
     // init the server
     const app = express();
-    const api = new Api();
+    app.use(bodyParser.json());
+    app.use(bodyParser.urlencoded());
+    
+    const api = new Api(
+        'CHANGE ME : this is a long secret for signing JWT',
+        client = redis.createClient()
+    );
 
     // Register controllers
     const path = __dirname + '/sakila/controllers';

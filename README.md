@@ -19,7 +19,7 @@ Will follow :
 - Route with extension : /v1/products.json
 - Other extensions (with automated conversion) : xml or yaml
 - Describing the API automatically with https://www.openapis.org/
-- JWT authentification
+- JWT authentification - https://tools.ietf.org/html/rfc7519
 
 Will handle :
 

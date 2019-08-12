@@ -4,7 +4,7 @@
  */
 class Router {
     constructor(entity, name) {
-        this.entity = entity;
+        this._entity = entity;
         this.api = entity.api;
         this.name = name;
     }
@@ -15,7 +15,7 @@ class Router {
             folder = this.name + folder;
         }
         let ep = this.api.endpoint(folder);
-        ep.auth(this.entity._auth);
+        ep.auth(this._entity._auth);
         return ep;
     }
     entity() {
