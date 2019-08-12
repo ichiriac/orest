@@ -5,6 +5,12 @@ const Response = require('./response');
  * Endpoint abstraction layer (routing)
  */
 class Endpoint {
+
+    /**
+     * Defines an endpoint with multiple versions and verbs
+     * @param {*} api 
+     * @param {*} name 
+     */
     constructor(api, name) {
         this.api = api;
         this.name = name;
@@ -133,6 +139,7 @@ class Action {
         return (req, res) => {
             if (this.auth) {
                 // @todo
+                
             }
             if (typeof this.cb === 'function') {
                 try {
