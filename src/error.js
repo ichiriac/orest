@@ -100,6 +100,18 @@ class NotFound extends HttpError {
     }
 }
 
+class Unauthorized extends HttpError {
+    constructor(message, code, from) {
+        if (!message) {
+            message = 'Unauthorized access';
+        }
+        if (!code) {
+            code = 1405;
+        }
+        super(401, message, code, from);
+    }
+}
+
 class Internal extends HttpError {
     constructor(message, code, from) {
         if (!code) {
@@ -114,5 +126,6 @@ HttpError.BadArgument = BadArgument;
 HttpError.Conflicts = Conflicts;
 HttpError.NotFound = NotFound;
 HttpError.Internal = Internal;
+HttpError.Unauthorized = Unauthorized;
 
 module.exports = HttpError;
