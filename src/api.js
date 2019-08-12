@@ -199,18 +199,16 @@ class Api {
         }
         return new Promise((done, reject) => {
             // getting its informations
-            this._redis.get(
-                token.jti,
-                function(err, json) {
-                    if (err) {
-                        console.error('Redis Error', err);
-                    } else if (json === null) {
-                        return reject(
-                            new Error.Unauthorized(
-                                'Authorization token no longer valid', 7412
-                            )
-                        );
-                    }
+            this._redis.get(token.jti, (err, json) => {
+                if (err) {
+                    console.error('Redis Error', err);
+                } else if (json === null) {
+                    return reject(
+                        new Error.Unauthorized(
+                            'Authorization token no longer valid', 7412
+                        )
+                    );
+                } else {
                     // checking the token source
                     let session = JSON.parse(json);
                     if (session.ip && session.ip !== req.ip) {
@@ -228,16 +226,28 @@ class Api {
                             )
                         );
                     }
-
-                    // assign token values
-                    req.jwt = token;
                     if (session.data) {
-                        Object.assign(req.jwt, session.data);
+                        token = Object.assign(token, session.data);
                     }
-                    
-                    done(token);
                 }
-            );
+
+                // assign token values
+                req.jwt = token;
+                
+                // define a destroy helper
+                req.jwt.destroy = () => {
+                    return new Promise((done, reject) => {
+                        this._redis.del(token.jti, (err, ok) => {
+                            if (err) {
+                                return reject(err);
+                            }
+                            done(ok);
+                        });
+                    });
+                };
+
+                done(req.jwt);
+            });
         });
     }
 }

@@ -15,7 +15,13 @@ Sakila().then(function(db) {
     
     const api = new Api(
         'CHANGE ME : this is a long secret for signing JWT',
-        client = redis.createClient()
+        client = redis.createClient({
+            enable_offline_queue: false,
+            retry_strategy: function(state) {
+                console.log('Redis is offline, retry #'+state.attempt+'...');
+                return 5000;
+            }
+        })
     );
 
     // Register controllers
