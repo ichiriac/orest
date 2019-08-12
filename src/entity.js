@@ -107,7 +107,7 @@ class Entity {
         }
         return route.get((req, res) => {
             let filter = Filter.list(this.model, req, res);
-            filter.find().then(function(records) {
+            return filter.find().then(function(records) {
                 // pre-hook
                 if (typeof cb === 'function') {
                     let result = cb(req, res, records);
@@ -115,16 +115,7 @@ class Entity {
                         records = result;
                     }    
                 }
-                Response.send(req, res, records);
-            }).catch(function(err) {
-                if (!(err instanceof Error)) {
-                    // unwrapped error, show it on console as a warning
-                    console.error(err);
-                    // wrap the error into an http message
-                    err = new Error.Internal("Unable to list entities", 3520, err);
-                }
-                // respond the error
-                Response.send(req, res, err);
+                return records;
             });
         }, this._version);
     }
@@ -180,7 +171,7 @@ class Entity {
         // retrieve entity informations
         return route.get((req, res) => {
             let filter = Filter.entity(this.model, req, res);
-            filter.read().then((entity) => {
+            return filter.read().then((entity) => {
                 if (!entity) {
                     // 404 : not found
                     throw new Error.NotFound(
@@ -194,16 +185,7 @@ class Entity {
                         entity = result;
                     }    
                 }
-                Response.send(req, res, entity);
-            }).catch(function(err) {
-                if (!(err instanceof Error)) {
-                    // unwrapped error, show it on console as a warning
-                    console.error(err);
-                    // wrap the error into an http message
-                    err = new Error.Internal("Unable to retrieve entity", 3510, err);
-                }
-                // respond the error
-                Response.send(req, res, err);
+                return entity;
             });
         }, this._version);
     }

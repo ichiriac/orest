@@ -2,7 +2,6 @@ const crypto = require('crypto');
 
 module.exports = function(api, db) {
     const model = db.model('Staff');
-    const staff = api.entity(model);
 
     // performs a login
     api.endpoint('/auth').post(function(req, res) {
