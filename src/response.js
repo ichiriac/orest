@@ -92,6 +92,7 @@ class Response {
         let out = this.value;
         if (out instanceof HttpError) {
             res.status(out._http);
+            out.details = out.details.replace('<domain>', req.hostname);
             out =  { error: out };
         } else {
             res.status(200);
