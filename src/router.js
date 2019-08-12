@@ -3,8 +3,9 @@
  * Defines the way an entity can route its URLS
  */
 class Router {
-    constructor(api, name) {
-        this.api = api;
+    constructor(entity, name) {
+        this.entity = entity;
+        this.api = entity.api;
         this.name = name;
     }
     list(folder) {
@@ -13,7 +14,9 @@ class Router {
         } else {
             folder = this.name + folder;
         }
-        return this.api.endpoint(folder);
+        let ep = this.api.endpoint(folder);
+        ep.auth(this.entity._auth);
+        return ep;
     }
     entity() {
         return this.list('/:id');

@@ -25,5 +25,8 @@
     "express": "^4.17.1",
     "sequelize": "^5.13.0",
     "sqlite3": "^4.0.9"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^8.5.1"
   }
 }

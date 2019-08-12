@@ -24,10 +24,20 @@ class Entity {
             }
         }
         this.name = name;
-        this.endpoints = new Router(api, name);
+        this.endpoints = new Router(this, name);
         this._search = null;
         this._version = 1;
         this._filters = [];
+        this._auth = false;
+    }
+
+    /**
+     * Requires the to auth
+     * @param {*} flag 
+     */
+    auth(flag = true) {
+        this._auth = flag;
+        return this;
     }
 
     /**

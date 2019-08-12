@@ -3,6 +3,9 @@ module.exports = function(api, db) {
     const films = db.model('Film');
     const actors = api.entity(model);
 
+    // requires to be auth
+    actors.auth();
+
     // handles the listing
     actors.list(true);
     // or for default : actors.list(true);

@@ -19,6 +19,7 @@ Will follow :
 - Route with extension : /v1/products.json
 - Other extensions (with automated conversion) : xml or yaml
 - Describing the API automatically with https://www.openapis.org/
+- JWT authentification
 
 Will handle :
 
@@ -28,6 +29,7 @@ Will handle :
 - Relations over entities
 - HTTP Error Codes with a Message body
 - HTTP Verbs for CRUD
+- Integrated Auth
 
 Will do out of the box :
 
