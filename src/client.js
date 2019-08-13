@@ -10,8 +10,10 @@
             url = document.location.origin;
         }
         url += '/v' + o.version + '/';
-        // defines the main communication 
-        api.fetch = function(endpoint, opt)  {
+        /**
+         * Defines the request endpoint
+         */
+        this.fetch = function(endpoint, opt)  {
             let uri = url + endpoint;
             if (!opt) {
                 opt = {};
@@ -59,6 +61,26 @@
                     });
                 }).catch(reject);
             });            
+        };
+        /**
+         * Defines the login helper
+         */
+        this.login = function(username, password) {
+
+        };
+
+        /**
+         * Kills current session
+         */
+        this.logout = function() {
+
+        };
+
+        /**
+         * Renews the current token
+         */
+        this.refreshToken = function() {
+
         };
     };
 
