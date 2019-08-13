@@ -111,6 +111,19 @@ class Api {
         for(let k in this._endpoints) {
             this._endpoints[k].register(server);
         }
+        // endpoint not found
+        server.use(function(req, res, next) {
+            Response.send(req, res, new Error.BadFormat(
+                'Bad route - no endpoint found', 7420
+            ));
+        });
+        // endpoint error
+        server.use(function(err, req, res, next) {
+            console.error(err);
+            Response.send(req, res, new Error.Internal(
+                'Internal server error', 7520, err
+            ));
+        });
         return this;
     }
 
