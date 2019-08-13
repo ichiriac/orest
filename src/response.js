@@ -63,6 +63,9 @@ class Response {
                     result[key] = this.format(entity[key], names[key]);
                 }
             }
+        } else if (entity instanceof Date) {
+            // convert to numeric timestamp
+            result = Math.round(entity.getTime() / 1000);
         } else {
             // extract every populated column into the object
             for(let k in entity) {
