@@ -123,8 +123,21 @@ class Entity {
     /**
      * Requires a create statement
      */
-    create() {
-
+    create(cb) {
+        let route = this.endpoints.list();
+        if (cb === false) {
+            return route.get(false, this._version);
+        }
+        return route.post((req, res) => {
+            let body = req.body;
+            if (!body) {
+                // @error mandatory
+            }
+            if (typeof cb === 'function') {
+                cb(body);
+            }
+            return this.model.create(body);
+        }, this._version);
     }
 
     /**
