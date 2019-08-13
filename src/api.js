@@ -201,7 +201,7 @@ class Api {
             // getting its informations
             this._redis.get(token.jti, (err, json) => {
                 if (err) {
-                    console.error('Redis Error', err);
+                    token.checked = false;
                 } else if (json === null) {
                     return reject(
                         new Error.Unauthorized(
@@ -229,6 +229,7 @@ class Api {
                     if (session.data) {
                         token = Object.assign(token, session.data);
                     }
+                    token.checked = true;
                 }
 
                 // assign token values
