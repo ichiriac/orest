@@ -37,7 +37,9 @@ module.exports = function(api, db) {
     // crud actions
     actors.create(true);
     actors.read(true);
-    actors.update(true);
+    actors.update(function(entity) {
+        entity.last_update = new Date();
+    });
     actors.delete(true);
     // alias : actors.crud(true);
 

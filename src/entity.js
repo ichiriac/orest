@@ -126,12 +126,14 @@ class Entity {
     create(cb) {
         let route = this.endpoints.list();
         if (cb === false) {
-            return route.get(false, this._version);
+            return route.post(false, this._version);
         }
         return route.post((req, res) => {
             let body = req.body;
             if (!body) {
-                // @error mandatory
+                throw new Error.BadFormat(
+                    'Request body is mandatory', 3430
+                );
             }
             if (typeof cb === 'function') {
                 cb(body);
@@ -205,8 +207,37 @@ class Entity {
     /**
      * 
      */
-    update() {
-
+    update(cb) {
+        let route = this.endpoints.entity();
+        if (cb === false) {
+            // disable the route
+            return route.put(false, this.version);
+        }
+        // retrieve entity informations
+        return route.put((req, res) => {
+            let body = req.body;
+            if (!body) {
+                throw new Error.BadFormat(
+                    'Request body is mandatory', 3420
+                );
+            }
+            let filter = Filter.entity(this.model, req, res);
+            return filter.read().then((entity) => {
+                if (!entity) {
+                    // 404 : not found
+                    throw new Error.NotFound(
+                        'Entity not found', 3421
+                    );
+                }
+                if (typeof cb === 'function') {
+                    cb(entity, body);
+                }
+                for(let k in body) {
+                    entity[k] = body[k];
+                }
+                return entity.save();
+            });
+        });
     }
     /**
      * Handles a delete action
