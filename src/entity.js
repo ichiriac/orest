@@ -242,8 +242,28 @@ class Entity {
     /**
      * Handles a delete action
      */
-    delete() {
-
+    delete(cb) {
+        let route = this.endpoints.entity();
+        if (cb === false) {
+            // disable the route
+            return route.delete(false, this.version);
+        }
+        // retrieve entity informations
+        return route.delete((req, res) => {
+            let filter = Filter.entity(this.model, req, res);
+            return filter.read().then((entity) => {
+                if (!entity) {
+                    // 404 : not found
+                    throw new Error.NotFound(
+                        'Entity not found', 3421
+                    );
+                }
+                if (typeof cb === 'function') {
+                    cb(entity);
+                }
+                return entity.destroy();
+            });
+        });
     }
 
     /**
