@@ -47,6 +47,18 @@ Sakila().then(function(db) {
         }]
     });
 
+    // expose the JS client
+    api.client({
+        url: 'http://localhost:3000',
+        name: 'sakila',
+        login: '/auth',
+        logout: '/logout',
+        refres: '/refresh'
+    });
+
+    // expose the public folder
+    app.use(express.static(__dirname + '/sakila/public'));    
+
     // binds API routes to Express
     api.register(app);
 

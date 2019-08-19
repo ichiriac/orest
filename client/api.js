@@ -5,16 +5,22 @@
      * @param {*} token 
      */
     var api = function(token) {
-        let url = o.url;
+        var url = o.url;
         if (!url) {
             url = document.location.origin;
         }
-        url += '/v' + o.version + '/';
+        url += '/v' + o.version;
+        var token = null;
         /**
          * Defines the request endpoint
          */
         this.fetch = function(endpoint, opt)  {
-            let uri = url + endpoint;
+            var uri;
+            if (endpoint[0] != '/') {
+                uri = url + '/' + endpoint;
+            } else {
+                uri = url + endpoint;
+            }
             if (!opt) {
                 opt = {};
             }
@@ -66,20 +72,64 @@
          * Defines the login helper
          */
         this.login = function(username, password) {
+            if (!o.login) {
+                return Promise.reject(
+                    new Error('Login action is not supported')
+                );
+            }
+            return this.fetch(o.login, {
+                method: 'POST',
+                body: {
+                    username: username,
+                    password: password
+                }
+            }).then(function(auth) {
+                this.setAuth(auth);
+                return auth;
+            }.bind(this));
+        };
 
+        /**
+         * Sets the authentification token
+         */
+        this.setAuth = function(auth) {
+            token = auth.token;
+            console.log(auth);
+        };
+
+        /**
+         * Checks if the authentification is defined
+         */
+        this.isAuth = function() {
+            return token != null;
         };
 
         /**
          * Kills current session
          */
         this.logout = function() {
-
+            if (!o.logout) {
+                return Promise.reject(
+                    new Error('Logout action is not supported')
+                );
+            }
+            return this.fetch(o.logout, {
+                method: 'DELETE',
+                auth: true
+            }).then(function(auth) {
+                this.setAuth(null);
+            }.bind(this));
         };
 
         /**
          * Renews the current token
          */
         this.refreshToken = function() {
+            if (!o.refresh) {
+                return Promise.reject(
+                    new Error('Refresh action is not supported')
+                );
+            }
 
         };
     };
@@ -91,49 +141,8 @@
         return this._models[name];
     };
     
-    /**
-     * Defines a model
-     * @param {*} api 
-     * @param {*} name 
-     * @param {*} endpoints 
-     */
-    var model = function(api, name) {
-        this.api = api;
-        this.name = name;
-    };
-    model.prototype.list = function(filter) {
-        this.api.fetch(this.name, {
-            auth: trie
-        })
-    };
 
-    /**
-     * 
-     * @param {*} model 
-     * @param {*} data 
-     */
-    var entity = function(model, data) {
-
-    };
-
-    entity.prototype.save = function() {
-
-    };
-
-    entity.prototype.delete = function() {
-
-    };
+    /* @files */
 
     w[o.name] = api;
-})(window, {
-    name: '<name>',
-    url: '<name>',
-    version: '<version>',
-    auth: {
-        login: '<login>',
-        logout: '<logout>',
-        refresh: '<refresh>'
-    },
-    models: {},
-    endpoints: {}
-});
+})(window, { /* @options */ });

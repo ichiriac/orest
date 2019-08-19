@@ -6,6 +6,7 @@ const utils = require('./utils');
 const Error = require('./error');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const fs = require('fs');
 
 const DICO = 'ABCDEFGHIJKLMNOPQRTUVWXYZabcdefhijklmnopqrstuvwxyz0123456789-_~%$!';
 const DICO_SIZE = DICO.length;
@@ -86,6 +87,37 @@ class Api {
         structure = utils.deepMerge(structure, meta);
         return this.endpoint('help').get((req, res) => {
             Response.send(req, res, structure);
+        }, version);
+    }
+
+    /**
+     * Generates the client
+     */
+    client(structure, version = 1) {
+        if (!structure) {
+            structure = {};
+        }
+        structure.version = version;
+        if (!structure.url) {
+            throw new Error('The `url` must be defined in order to route requests to the API');
+        }
+        if (!structure.name) {
+            throw new Error('The `name` of the API must be defined');
+        }
+
+        const path = __dirname + '/../client/';
+        let script = fs.readFileSync(path + 'api.js').toString();
+        script = script.replace('{ /* @options */ }', JSON.stringify(structure, null, 2));
+        let includes = [];
+        ['error.js', 'endpoint.js', 'router.js', 'model.js', 'entity.js'].forEach(function(filename) {
+            includes.push(
+                fs.readFileSync(path + filename).toString()
+            );
+        });
+        script = script.replace('/* @files */', includes.join("\n"));
+        return this.endpoint('client.js').get((req, res) => {
+            res.header('content-type', 'application/javascript');
+            res.send(script);
         }, version);
     }
 
