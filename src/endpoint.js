@@ -104,6 +104,22 @@ class Endpoint {
     }
 }
 
+const emailRegex = /^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/i;
+const validators = {
+    string: function(value) {
+        return typeof value === 'string';
+    },
+    email: function(value) {
+        return emailRegex.test(value);
+    },
+    number: function(value) {
+        if (typeof value === 'string') {
+            value = Number.parseInt(value, 10);
+        }
+        return typeof value === 'number' && !isNaN(value);
+    }
+}
+
 /**
  * Action class
  */
@@ -140,10 +156,8 @@ class Action {
      * @param {*} description 
      * @param {*} mandatory 
      */
-    param(name, type, description, mandatory) {
-        this.params[name] = {
-            description, type, mandatory
-        };
+    param(options) {
+        this.params[options.name] = options;
         return this;
     }
     /**
@@ -152,6 +166,39 @@ class Action {
     callback() {
         // process the action
         let process = (req, res) => {
+            // checking parameters
+            if (this.params) {
+                for(let n in this.params) {
+                    let option = this.params[n];
+                    if (req.body.hasOwnProperty(n)) {
+                        let value = req.body[n];
+                        if (validators[option.type]) {
+                            if (!validators[options.type](value)) {
+                                throw new api.error.BadArgument(
+                                    'Bad "' + n + '" format, expecting ' + options.type
+                                );
+                            }
+                        }
+                        if (typeof option.validate === 'function') {
+                            try {
+                                if (options.validate(value, n) === false) {
+                                    throw new Error('Bad validation format');
+                                }
+                            } catch(e) {
+                                throw new api.error.BadArgument(
+                                    'Bad "' + n + '" format', e
+                                );
+                            }
+                        }
+                    } else if (option.required) {
+                        throw new api.error.BadArgument(
+                            'Missing "' + n + '"' + (option.description ? ': ' + option.description : '')
+                        );
+                    }
+
+                }
+            }
+            // processing callback
             if (typeof this.cb === 'function') {
                 try {
                     return this.cb(req, res);
