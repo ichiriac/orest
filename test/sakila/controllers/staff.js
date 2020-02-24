@@ -44,7 +44,7 @@ module.exports = function(api, db) {
     ;
 
     // destroys a session
-    api.endpoint('/logout').auth().post((req, res) => {
+    api.endpoint('/logout').auth().delete((req, res) => {
         return req.jwt.destroy();
     }).describe('Closes the current token');
 
