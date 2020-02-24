@@ -10,7 +10,7 @@ var model = function(api, name) {
 };
 model.prototype.list = function(filter) {
     this.api.fetch(this.name, {
-        auth: trie
+        auth: true
     })
 };
 
