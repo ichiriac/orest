@@ -223,32 +223,41 @@ class ListFilter extends Filter {
                 });
             }
             // lookup on criterias
-            const Op = model.sequelize.Sequelize.Op;
             for(let key in req.query) {
                 if (key[0] === '$') {
                     let value = req.query[key];
                     let field = key.substring(1);
                     let criteria = value.split(':', 2);
-                    value = criteria[1];
-                    criteria = criteria[0];
-                    if (!this.hasField(field)) {
-                        throw new Error.BadArgument(
-                            'Undefined criteria field "'+field+'"', 2460
-                        );
-                    }
-                    if (!Op.hasOwnProperty(criteria)) {
-                        throw new Error.BadArgument(
-                            'Undefined criteria operator "'+criteria+'"', 2461
-                        );
-                    }
-                    criteria = Op[criteria];
-                    this.where[field] = {
-                        [criteria]: value
-                    };
+                    this.setCriteria(field, criteria[0], criteria[1]);
                 }
             }
         }        
     }
+
+    /**
+     * Sets a new criteria (or overwrite existing)
+     * @param {String} field 
+     * @param {String} criteria 
+     * @param {*} value 
+     */
+    setCriteria(field, criteria, value) {
+        const Op = this.model.sequelize.Sequelize.Op;
+        if (!this.hasField(field)) {
+            throw new Error.BadArgument(
+                'Undefined criteria field "'+field+'"', 2460
+            );
+        }
+        if (!Op.hasOwnProperty(criteria)) {
+            throw new Error.BadArgument(
+                'Undefined criteria operator "'+criteria+'"', 2461
+            );
+        }
+        criteria = Op[criteria];
+        this.where[field] = {
+            [criteria]: value
+        };
+    }
+
     /**
      * Retrieve default filtering options
      */
