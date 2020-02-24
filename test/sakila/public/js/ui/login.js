@@ -9,8 +9,8 @@
                 $('<p id="profile-name" class="profile-name-card">'),
                 form = $('<form class="form-signin">').append([
                     error = $('<span id="reauth-email" class="reauth-email"></span>'),
-                    username = $('<input type="text" class="form-control" placeholder="Username" required autofocus>'),
-                    password = $('<input type="password" class="form-control" placeholder="Password" required>'),
+                    username = $('<input type="text" class="form-control" placeholder="Username" value="mike" required autofocus>'),
+                    password = $('<input type="password" class="form-control" placeholder="Password" value="secret" required>'),
                     $('<div id="remember" class="checkbox">').append(
                         $('<label>').append([
                             remember = $('<input type="checkbox" value="remember-me">'),
