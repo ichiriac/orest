@@ -106,7 +106,7 @@ class Entity {
             return route.get(false, this._version);
         }
         return route.get((req, res) => {
-            let filter = Filter.list(this.model, req, res);
+            let filter = this.getListFilter(req, res);
             return filter.find().then(function(records) {
                 // pre-hook
                 if (typeof cb === 'function') {
@@ -185,7 +185,7 @@ class Entity {
         }
         // retrieve entity informations
         return route.get((req, res) => {
-            let filter = Filter.entity(this.model, req, res);
+            let filter = this.getEntityFilter(req, res);
             return filter.read().then((entity) => {
                 if (!entity) {
                     // 404 : not found
@@ -204,6 +204,25 @@ class Entity {
             });
         }, this._version);
     }
+
+    /**
+     * Gets an entity filter instance
+     * @param {*} req 
+     * @param {*} res 
+     */
+    getEntityFilter(req, res) {
+        return Filter.entity(this.model, req, res);        
+    }
+
+    /**
+     * Gets a listing filter instance
+     * @param {*} req 
+     * @param {*} res 
+     */
+    getListFilter(req, res) {
+        return Filter.list(this.model, req, res);
+    }
+
     /**
      * 
      */
@@ -267,6 +286,17 @@ class Entity {
     }
 
     /**
+     * Alias for calling create, read, update, delete
+     * @param {*} flag 
+     */
+    crud(flag) {
+        this.create(flag);
+        this.read(flag);
+        this.update(flag);
+        this.delete(flag);        
+    }
+
+    /**
      * Handles a bulk update
      */
     bulkUpdate() {
@@ -278,6 +308,16 @@ class Entity {
      */
     bulkDelete() {
 
+    }
+
+    /**
+     * Alias for calling bulkUpdate, bulkDelete
+     * @param {*} flag 
+     */
+    bulk(flag) {
+        this.bulkUpdate(flag);
+        this.bulkDelete(flag);
+        return this;
     }
 }
 
