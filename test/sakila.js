@@ -53,7 +53,7 @@ Sakila().then(function(db) {
         name: 'sakila',
         login: '/auth',
         logout: '/logout',
-        refres: '/refresh'
+        refresh: '/refresh'
     });
 
     // expose the public folder
