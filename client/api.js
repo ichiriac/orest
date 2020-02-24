@@ -93,8 +93,11 @@
          * Sets the authentification token
          */
         this.setAuth = function(auth) {
-            token = auth.token;
-            console.log(auth);
+            if (auth && auth.token) {
+                token = auth.token;
+            } else {
+                token = null;
+            }
         };
 
         /**
