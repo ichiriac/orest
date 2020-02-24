@@ -3,8 +3,9 @@ module.exports = function(api, db) {
     const films = db.model('Film');
     const actors = api.entity(model);
 
+
     // requires to be auth
-    actors.auth();
+    // actors.auth();
 
     // handles the listing
     actors.list(true);
@@ -50,8 +51,10 @@ module.exports = function(api, db) {
     // alias : actors.bulk(true);
 
     // relations
-    actors.read('/films', function(req, res, item) {
-        return films.findAll(filter);
+    actors.read('films', function(req, res, item) {
+        let filter = api.entity('films').getListFilter(req, res);
+        filter.setCriteria("title", "like", "%HO%");
+        return filter.find();
     });
 
 };

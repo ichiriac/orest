@@ -9,8 +9,8 @@ var model = function(api, name) {
     this.name = name;
 };
 model.prototype.list = function(filter) {
-    this.api.fetch(this.name, {
+    return this.api.fetch(this.name, {
         auth: true
-    })
+    });
 };
 

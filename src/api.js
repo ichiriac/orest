@@ -48,6 +48,7 @@ class Api {
         return this._entities[name];
     }
 
+
     /**
      * Generating an help entry
      * @param {*} meta 
