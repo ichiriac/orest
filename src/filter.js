@@ -1,5 +1,4 @@
 const Error = require('./error');
-const Op = require('sequelize').Op;
 /**
  * 
  * The filters are used to filter a resultset
@@ -224,6 +223,7 @@ class ListFilter extends Filter {
                 });
             }
             // lookup on criterias
+            const Op = model.sequelize.Sequelize.Op;
             for(let key in req.query) {
                 if (key[0] === '$') {
                     let value = req.query[key];
